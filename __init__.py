@@ -53,7 +53,7 @@ def image_cap():
     if request.method == 'POST':
 
         name = request.form['name']
-        number = int(request.form['number'])
+        number = request.form['number']
         def isValid(s):
             Pattern = re.compile("(0/91)?[7-9][0-9]{9}")
             return Pattern.match(number)
@@ -62,10 +62,8 @@ def image_cap():
             password = request.form['password']
             match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
             records=""
-            if match == None:
-                print('Bad Syntax in ' + addressToVerify)
-                raise ValueError('Bad Syntax')
             domain_name = email.split('@')[1]
+            print(number)
             try:
                 records = dns.resolver.query(domain_name, 'MX')
             except:
@@ -97,12 +95,12 @@ def image_cap():
                     cv2.imwrite('face.jpg',frame)
                     cam.release()
 
-                    enrolled_face = kf.enroll_face(file='face.jpg', subject_id=str(email), gallery_name='a-gallery')
+                    enrolled_face = kf.enroll_face(file='face2.jpg', subject_id=str(email), gallery_name='a-gallery')
                     face_id=enrolled_face['face_id']
                     status = enrolled_face['images'][0]['transaction']['status']
                     if status=="success":
                         # execute query to insert data
-                        out = cursor.execute('insert into flask_use values("%s","%d","%s","%s","%s")'%(name,number,email,password,face_id))
+                        out = cursor.execute('insert into flask_use2 values("%s","%s","%s","%s","%s")'%(name,number,email,password,face_id))
                         conn.commit()
                         return render_template('image_cap.html')
                     else:
@@ -113,7 +111,7 @@ def image_cap():
                 return '<h1>Invalid Email</h1>'
         else :
             print ("Invalid Number")
-            return '<h1>Invalid Number</h1>'      
+            return '<h1>Invalid Number</h1>'
 
 
 
@@ -148,7 +146,7 @@ def dashboard():
         emaill = request.form['email']
         passwordd = request.form['password']
 
-        cursor.execute('select * from flask_use where email="%s" and password="%s"'%(emaill,passwordd))
+        cursor.execute('select * from flask_use2 where email="%s" and password="%s"'%(emaill,passwordd))
         login_details = cursor.fetchall()
 
         recognized_faces = kf.recognize_face(file='face2.jpg', gallery_name='a-gallery')
